@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>五柳先生｜陶淵明知識密室</title>
+  <meta name="description" content="進入陶淵明的知識密室！收集五個密碼碎片，解開封印大門，挑戰你對田園詩人之宗的認識。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07010e;
+      --bg2: #110224;
+      --card: rgba(14,4,28,0.97);
+      --card2: rgba(22,7,45,0.92);
+      --border: rgba(110,55,200,0.32);
+      --gold: #c9a227;
+      --gold-l: #f0d060;
+      --gold-d: rgba(201,162,39,0.28);
+      --amber: #e07030;
+      --purple: #7b2fff;
+      --purple-l: rgba(123,47,255,0.13);
+      --txt: #e5d9c8;
+      --txt-d: #9a8870;
+      --txt-m: #5a4a38;
+      --ok: #52c476;
+      --err: #e84040;
+      --ok-bg: rgba(82,196,118,0.11);
+      --err-bg: rgba(232,64,64,0.11);
+    }
+
+    body {
+      font-family: 'Noto Sans TC','Microsoft JhengHei',sans-serif;
+      background: var(--bg); color: var(--txt);
+      min-height: 100vh; overflow-x: hidden;
+    }
+
+    /* ── Background ── */
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(ellipse at 20% 15%,rgba(80,20,160,.38) 0%,transparent 45%),
+        radial-gradient(ellipse at 82% 85%,rgba(50,10,100,.32) 0%,transparent 42%),
+        radial-gradient(ellipse at 55% 50%,rgba(18,4,55,.55) 0%,transparent 58%);
+    }
+
+    /* ── Particles ── */
+    .ptc {
+      position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+      opacity:0; animation:ptc-rise var(--d,8s) linear infinite var(--dl,0s);
+    }
+    @keyframes ptc-rise {
+      0%  { transform:translateY(102vh) translateX(0); opacity:0; }
+      4%  { opacity:.65; }
+      88% { opacity:.35; }
+      100%{ transform:translateY(-8vh) translateX(var(--dr,20px)); opacity:0; }
+    }
+
+    /* ══ STATE BAR ══ */
+    
+    #state-bar {
+      position:fixed; top:0; left:0; right:0; z-index:200;
+      background:rgba(7,1,18,.94); border-bottom:1px solid var(--border);
+      padding:1rem 1.5rem; backdrop-filter:blur(14px);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+
+    .sb-left {
+      display:flex; align-items:center; gap:.42rem;
+      flex:1; min-width:0; overflow:hidden;
+    }
+    .sb-dot {
+      width:6px; height:6px; border-radius:50%; background:var(--gold);
+      flex-shrink:0; animation:dot-pulse 2s ease-in-out infinite;
+    }
+    @keyframes dot-pulse { 0%,100%{opacity:.3;transform:scale(.8)} 50%{opacity:1;transform:scale(1.25)} }
+    #state-txt {
+      font-size:.66rem; color:var(--gold); letter-spacing:.04em;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    /* ── Gem row (top-right) ── */
+    #gem-bar {
+      display:none; align-items:center; gap:.28rem; flex-shrink:0;
+    }
+    #gem-bar.vis { display:flex; }
+    
+    .gdot {
+      width:40px; height:40px; border-radius:50%;
+      border:1.5px solid rgba(201,162,39,.15);
+      background:rgba(201,162,39,.03);
+      position:relative; cursor:default;
+      transition:all .5s ease;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; line-height:1;
+      filter:grayscale(1) opacity(.3);
+    }
+
+    .gdot.got {
+      background:rgba(201,162,39,.12); border-color:var(--gold-l);
+      box-shadow:0 0 12px rgba(201,162,39,.75), 0 0 4px rgba(255,220,80,.5);
+      filter:none;
+      animation:gpop .55s ease;
+    }
+    .gdot .gtip {
+      position:absolute; top:calc(100% + 5px); right:0;
+      background:rgba(10,2,24,.97); border:1px solid var(--gold);
+      border-radius:6px; padding:.28rem .7rem;
+      font-size:.7rem; color:var(--gold-l); white-space:nowrap;
+      opacity:0; pointer-events:none; transition:opacity .2s; z-index:999;
+    }
+    .gdot:hover .gtip { opacity:1; }
+    @keyframes gpop { 0%{transform:scale(.2);opacity:0} 65%{transform:scale(1.4)} 100%{transform:scale(1)} }
+
+    /* ── App ── */
+    #app {
+      position:relative; z-index:1; min-height:100vh;
+      display:flex; flex-direction:column; align-items:center;
+      padding-top:50px; padding-bottom:30px;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      width:100%; max-width:780px; padding:1.8rem 1.4rem;
+      display:none; animation:s-in .45s ease;
+    }
+    .screen.active { display:block; }
+    @keyframes s-in { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ──── INTRO ──── */
+    #s-intro { text-align:center; padding-top:2.5rem; }
+    .badge {
+      display:inline-flex; align-items:center; gap:.35rem;
+      background:rgba(201,162,39,.09); border:1px solid rgba(201,162,39,.28);
+      border-radius:20px; padding:.28rem .8rem;
+      font-size:.72rem; color:var(--gold); letter-spacing:.1em; margin-bottom:1.4rem;
+    }
+    .main-title {
+      font-family:'Noto Serif TC',serif;
+      font-size:clamp(2rem,6vw,3.4rem);
+      background:linear-gradient(135deg,var(--gold-l) 0%,var(--amber) 50%,var(--gold) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      margin-bottom:.4rem;
+    }
+    .main-sub { font-family:'Noto Serif TC',serif; font-size:1.2rem; color:var(--txt-d); margin-bottom:1.8rem; }
+    .intro-desc { font-size:1.15rem; color:var(--txt-d); line-height:2.1; max-width:550px; margin:0 auto 2rem; }
+    .rules-box {
+      background:var(--card2); border:1px solid var(--border); border-radius:12px;
+      padding:1.4rem; text-align:left; max-width:550px; margin:0 auto 2.3rem;
+    }
+    .rules-box h3 { font-size:1.05rem; color:var(--gold); margin-bottom:.75rem; letter-spacing:.1em; }
+    .rules-box ul { list-style:none; display:flex; flex-direction:column; gap:.6rem; }
+    .rules-box li { font-size:1.1rem; color:var(--txt-d); display:flex; align-items:flex-start; gap:.45rem; }
+    .rules-box li::before { content:'◆'; color:var(--gold); font-size:.72rem; margin-top:.32rem; flex-shrink:0; }
+    .btn-start {
+      display:inline-flex; align-items:center; gap:.5rem;
+      background:linear-gradient(135deg,#7a3200,#c9a227);
+      border:none; border-radius:50px; padding:.95rem 2.6rem;
+      font-family:'Noto Serif TC',serif; font-size:1.25rem; color:#fff;
+      cursor:pointer; transition:all .3s ease;
+      box-shadow:0 4px 22px rgba(201,162,39,.28); position:relative; overflow:hidden;
+    }
+    .btn-start::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.14),transparent); opacity:0; transition:opacity .3s; }
+    .btn-start:hover::before { opacity:1; }
+    .btn-start:hover { transform:translateY(-2px); box-shadow:0 7px 32px rgba(201,162,39,.5); }
+
+    /* ──── LEVEL SCREEN ──── */
+    .lv-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+    .lv-badge  { display:flex; align-items:center; gap:.5rem; }
+    .lv-num {
+      width:44px; height:44px; border-radius:50%;
+      border:2px solid var(--gold); display:flex; align-items:center; justify-content:center;
+      font-family:'Noto Serif TC',serif; font-size:1.3rem; color:var(--gold);
+      box-shadow:0 0 16px rgba(201,162,39,.28);
+    }
+    .lv-info h2 { font-family:'Noto Serif TC',serif; font-size:1.2rem; color:var(--gold-l); }
+    .lv-info p  { font-size:.85rem; color:var(--txt-d); }
+    .type-tag {
+      font-size:.7rem; color:var(--purple); background:var(--purple-l);
+      border:1px solid rgba(123,47,255,.3); border-radius:20px; padding:.2rem .7rem;
+    }
+
+    /* Tip card */
+    .tip-card {
+      background:rgba(201,162,39,.055); border:1px solid rgba(201,162,39,.2);
+      border-left:3px solid var(--gold); border-radius:8px;
+      padding:1.1rem 1.3rem; margin-bottom:1.5rem;
+      font-size:1.15rem; color:var(--txt-d); line-height:1.95;
+    }
+    .tip-lbl { display:flex; align-items:center; gap:.3rem; font-size:.85rem; color:var(--gold); font-weight:700; letter-spacing:.1em; margin-bottom:.5rem; }
+
+    /* Question card */
+    .q-card {
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:1.6rem; margin-bottom:1.5rem;
+    }
+    .q-lbl  { font-size:.85rem; color:var(--txt-m); letter-spacing:.15em; margin-bottom:.8rem; }
+    /* ★ LARGER QUESTION TEXT ★ */
+    .q-text { font-family:'Noto Serif TC',serif; font-size:1.28rem; line-height:2.1; color:var(--txt); }
+    .q-text strong { color:var(--gold-l); }
+    .quote-block {
+      background:rgba(201,162,39,.055); border-left:3px solid rgba(201,162,39,.38);
+      border-radius:0 8px 8px 0; padding:.8rem 1.1rem; margin-top:.8rem;
+      font-style:italic; line-height:2;
+    }
+    .err-word { color:var(--txt); }
+
+    /* Options  ★ LARGER ★ */
+    .opts { display:flex; flex-direction:column; gap:.85rem; margin-bottom:1.2rem; }
+    .opt-btn {
+      display:flex; align-items:flex-start; gap:.85rem;
+      background:var(--card2); border:1px solid var(--border); border-radius:11px;
+      padding:1.05rem 1.25rem; cursor:pointer; transition:all .22s ease;
+      text-align:left; color:var(--txt); font-family:inherit;
+      font-size:1.15rem; line-height:1.8; width:100%;
+    }
+    .opt-ltr {
+      width:34px; height:34px; border-radius:50%; border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.88rem; flex-shrink:0; transition:all .22s; color:var(--txt-d);
+    }
+    .opt-btn:hover { border-color:rgba(201,162,39,.4); background:rgba(201,162,39,.06); }
+    .opt-btn:hover .opt-ltr { border-color:var(--gold); color:var(--gold); }
+    .opt-btn.sel  { border-color:var(--gold); background:rgba(201,162,39,.09); }
+    .opt-btn.sel  .opt-ltr { background:var(--gold); border-color:var(--gold); color:#000; font-weight:700; }
+    .opt-btn.ok   { border-color:var(--ok); background:var(--ok-bg); }
+    .opt-btn.ok   .opt-ltr { background:var(--ok); border-color:var(--ok); color:#000; }
+    .opt-btn.ng   { border-color:var(--err); background:var(--err-bg); opacity:.72; }
+    .opt-btn.ng   .opt-ltr { background:var(--err); border-color:var(--err); color:#fff; }
+    .opt-btn:disabled { cursor:default; }
+
+    /* Text input */
+    .txt-area { margin-bottom:1.2rem; }
+    .txt-lbl { font-size:.88rem; color:var(--txt-d); margin-bottom:.5rem; }
+    textarea.ans-in {
+      width:100%; background:var(--card2); border:1px solid var(--border); border-radius:8px;
+      padding:.9rem 1.1rem; color:var(--txt); font-family:inherit;
+      font-size:1.15rem; line-height:1.8; resize:vertical; outline:none;
+      transition:border-color .22s; min-height:98px;
+    }
+    textarea.ans-in:focus { border-color:rgba(201,162,39,.5); }
+
+    /* Order cards  ★ LARGER ★ */
+    .ord-grid { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1.2rem; }
+    @media(max-width:460px){ .ord-grid{ grid-template-columns:1fr; } }
+    .ord-card {
+      background:var(--card2); border:1px solid var(--border); border-radius:11px;
+      padding:.95rem; cursor:pointer; transition:all .22s;
+      display:flex; align-items:flex-start; gap:.7rem;
+    }
+    .ord-card:hover { border-color:rgba(201,162,39,.4); background:rgba(201,162,39,.055); }
+    .ord-card.num { border-color:var(--gold); background:rgba(201,162,39,.09); }
+    .ord-card.ok  { border-color:var(--ok); background:var(--ok-bg); }
+    .ord-card.ng  { border-color:var(--err); background:var(--err-bg); }
+    .ord-n {
+      width:34px; height:34px; border-radius:50%; border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.92rem; flex-shrink:0; color:var(--txt-m); transition:all .22s;
+    }
+    .ord-card.num .ord-n { background:var(--gold); border-color:var(--gold); color:#000; font-weight:700; }
+    .ord-card.ok  .ord-n { background:var(--ok);   border-color:var(--ok);   color:#000; font-weight:700; }
+    .ord-card.ng  .ord-n { background:var(--err);  border-color:var(--err);  color:#fff; font-weight:700; }
+    /* ★ LARGER order text ★ */
+    .ord-txt { font-size:1.12rem; color:var(--txt-d); line-height:1.7; }
+
+    /* Feedback */
+    .fb {
+      border-radius:10px; padding:1.1rem 1.25rem; margin-bottom:1.15rem;
+      font-size:1.12rem; line-height:1.9; display:none; animation:s-in .3s ease;
+    }
+    .fb.ok-fb { display:block; background:var(--ok-bg); border:1px solid rgba(82,196,118,.28); color:#88e8a8; }
+    .fb.ng-fb { display:block; background:var(--err-bg); border:1px solid rgba(232,64,64,.28); color:#f09090; }
+    .fb-ttl { font-weight:700; margin-bottom:.35rem; display:flex; align-items:center; gap:.38rem; }
+
+    /* Fragment reveal */
+    .frag-rev {
+      background:linear-gradient(135deg,rgba(201,162,39,.1),rgba(201,162,39,.04));
+      border:1px solid rgba(201,162,39,.4); border-radius:10px;
+      padding:1.1rem; text-align:center; margin-bottom:1.15rem; display:none;
+      animation:s-in .5s ease;
+    }
+    .frag-rev.show { display:block; }
+    .fr-lbl { font-size:.8rem; color:var(--gold); letter-spacing:.15em; margin-bottom:.38rem; }
+    .fr-txt { font-family:'Noto Serif TC',serif; font-size:1.55rem; color:var(--gold-l); text-shadow:0 0 15px rgba(201,162,39,.4); letter-spacing:.12em; }
+
+    /* Buttons */
+    .btn-row { display:flex; gap:.75rem; flex-wrap:wrap; }
+    .btn { padding:.85rem 2.1rem; border-radius:8px; border:1px solid; font-family:inherit; font-size:1.12rem; cursor:pointer; transition:all .22s; }
+    .btn-p { background:linear-gradient(135deg,rgba(130,70,0,.82),rgba(195,145,25,.82)); border-color:var(--gold); color:var(--gold-l); }
+    .btn-p:hover { background:linear-gradient(135deg,rgba(165,88,0,.9),rgba(215,165,45,.9)); box-shadow:0 4px 16px rgba(201,162,39,.3); }
+    .btn-s { background:transparent; border-color:var(--border); color:var(--txt-d); }
+    .btn-s:hover { border-color:rgba(120,60,220,.5); color:var(--txt); }
+    .btn:disabled { opacity:.38; cursor:not-allowed; }
+
+    /* ──── FINAL ──── */
+    #s-final { text-align:center; }
+    .fs-ttl { font-family:'Noto Serif TC',serif; font-size:1.7rem; color:var(--gold-l); margin-bottom:.5rem; }
+    .fs-sub { font-size:1.02rem; color:var(--txt-d); margin-bottom:1.9rem; }
+    .frag-asm { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-bottom:1.9rem; }
+    .fa-pc {
+      background:rgba(201,162,39,.11); border:1px solid rgba(201,162,39,.33);
+      border-radius:8px; padding:.5rem .95rem;
+      font-family:'Noto Serif TC',serif; font-size:1.15rem; color:var(--gold-l);
+      animation:s-in .5s ease backwards;
+    }
+    .asm-box {
+      background:linear-gradient(135deg,rgba(201,162,39,.07),rgba(120,45,0,.05));
+      border:1px solid rgba(201,162,39,.28); border-radius:12px;
+      padding:1.5rem; text-align:center; margin-bottom:1.9rem;
+    }
+    .asm-lbl { font-size:.85rem; color:var(--gold); letter-spacing:.15em; margin-bottom:.8rem; }
+    .asm-txt { font-family:'Noto Serif TC',serif; font-size:1.45rem; color:var(--gold-l); line-height:1.9; text-shadow:0 0 22px rgba(201,162,39,.28); }
+
+    /* ──── VICTORY ──── */
+    #s-victory { text-align:center; padding-top:1.8rem; }
+    .v-emoji { font-size:3.8rem; margin-bottom:.9rem; animation:bounce 1.1s ease-in-out infinite alternate; }
+    @keyframes bounce { from{transform:scale(.95) translateY(0)} to{transform:scale(1.06) translateY(-10px)} }
+    .v-title {
+      font-family:'Noto Serif TC',serif; font-size:2.25rem;
+      background:linear-gradient(135deg,var(--gold-l),var(--amber));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      margin-bottom:.5rem;
+    }
+    .v-sub { font-size:1.15rem; color:var(--txt-d); margin-bottom:2rem; }
+    .key-box {
+      background:var(--card); border:2px solid var(--gold); border-radius:16px;
+      padding:1.9rem; max-width:380px; margin:0 auto 2rem;
+      box-shadow:0 0 48px rgba(201,162,39,.18);
+    }
+    .key-div { font-size:.62rem; letter-spacing:.22em; color:var(--gold); margin-bottom:.9rem; }
+    .key-ico { font-size:2rem; margin-bottom:.5rem; }
+    .key-lbl { font-size:.85rem; color:var(--txt-d); margin-bottom:.5rem; }
+    .key-num { font-family:'Noto Serif TC',serif; font-size:2.9rem; color:var(--gold-l); text-shadow:0 0 32px rgba(201,162,39,.5); letter-spacing:.25em; }
+    .v-note { font-size:1.12rem; color:var(--txt-d); line-height:1.85; }
+    .v-note strong { color:var(--gold-l); }
+
+    /* Confetti */
+    .cf { position:fixed; pointer-events:none; z-index:9999; animation:cf-fall var(--cd,3s) linear forwards; }
+    @keyframes cf-fall { 0%{transform:translateY(-20px) rotate(0);opacity:1} 100%{transform:translateY(100vh) rotate(var(--cr,720deg));opacity:0} }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:rgba(28,8,55,.97); border:1px solid rgba(201,162,39,.4);
+      border-radius:8px; padding:.6rem 1.2rem; font-size:.88rem;
+      color:var(--gold-l); z-index:9999; white-space:nowrap; pointer-events:none;
+      animation:s-in .2s ease;
+    }
+
+    @media(max-width:600px){
+      .screen { padding:1.3rem 1rem; }
+      .main-title { font-size:2.2rem; }
+      .q-text { font-size:1.15rem; }
+      .opt-btn { font-size:1.05rem; }
+      .ord-txt { font-size:1.02rem; }
+      .tip-card { font-size:1.05rem; }
+      textarea.ans-in { font-size:1.05rem; }
+    }
+
+    /* ──── NAME INPUT & CERTIFICATE ──── */
+    .name-input-wrap {
+      margin: 0 auto 1.5rem; max-width: 400px;
+    }
+    .name-field {
+      width: 100%; background: var(--card2);
+      border: 1px solid rgba(201,162,39,.4); border-radius: 10px;
+      padding: .85rem 1.1rem; color: var(--txt);
+      font-family: 'Noto Serif TC', serif;
+      font-size: 1.25rem; text-align: center; outline: none;
+      margin-bottom: .85rem; transition: border-color .22s; display: block;
+    }
+    .name-field:focus { border-color: var(--gold); }
+    .btn-cert {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: linear-gradient(135deg, #7a3200, #c9a227);
+      border: none; border-radius: 50px; padding: .85rem 2.2rem;
+      font-family: 'Noto Serif TC', serif; font-size: 1.1rem; color: #fff;
+      cursor: pointer; transition: all .3s ease;
+      box-shadow: 0 4px 22px rgba(201,162,39,.28);
+    }
+    .btn-cert:hover { transform: translateY(-2px); box-shadow: 0 7px 32px rgba(201,162,39,.5); }
+    #cert-area { animation: s-in .65s ease; }
+    .cert-box {
+      background: linear-gradient(145deg,rgba(201,162,39,.09),rgba(100,35,0,.07),rgba(201,162,39,.05));
+      border: 2px solid var(--gold); border-radius: 18px;
+      padding: 2rem 1.8rem 1.6rem; max-width: 500px;
+      margin: 0 auto 1.5rem; position: relative;
+      box-shadow: 0 0 70px rgba(201,162,39,.2), inset 0 0 50px rgba(201,162,39,.04);
+    }
+    .cert-corner {
+      position: absolute; font-size: 1rem; color: var(--gold); opacity: .55;
+    }
+    .cert-corner.tl { top: .75rem; left: .9rem; }
+    .cert-corner.tr { top: .75rem; right: .9rem; }
+    .cert-corner.bl { bottom: .75rem; left: .9rem; }
+    .cert-corner.br { bottom: .75rem; right: .9rem; }
+    .cert-divider { border: none; border-top: 1px solid rgba(201,162,39,.32); margin: .85rem 0; }
+    .cert-header-lbl { font-size: .68rem; letter-spacing: .22em; color: var(--gold); margin-bottom: .55rem; }
+    .cert-key-ico { font-size: 2.4rem; margin-bottom: .3rem; }
+    .cert-title { font-family: 'Noto Serif TC', serif; font-size: 1.7rem; color: var(--gold-l); margin-bottom: .2rem; }
+    .cert-subtitle { font-size: .82rem; color: var(--txt-d); letter-spacing: .1em; margin-bottom: .9rem; }
+    .cert-name-lbl { font-size: .82rem; color: var(--txt-m); letter-spacing: .12em; margin-bottom: .35rem; }
+    .cert-name {
+      font-family: 'Noto Serif TC', serif; font-size: 2.1rem;
+      color: var(--gold-l); letter-spacing: .18em; margin-bottom: .95rem;
+      text-shadow: 0 0 28px rgba(201,162,39,.5);
+    }
+    .cert-desc { font-size: .92rem; color: var(--txt-d); line-height: 2.05; margin-bottom: .9rem; }
+    .cert-seal { font-size: .76rem; color: var(--txt-m); letter-spacing: .12em; }
+    .cert-date { font-size: .78rem; color: var(--txt-m); margin-top: .45rem; }
+    .btn-home {
+      display: inline-flex; align-items: center; gap: .45rem;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 8px; padding: .75rem 1.9rem;
+      font-family: inherit; font-size: 1rem; color: var(--txt-d);
+      cursor: pointer; transition: all .22s; margin-top: 1.1rem;
+    }
+    .btn-home:hover { border-color: rgba(120,60,220,.5); color: var(--txt); }
+  
+    /* Mascot Q-version */
+    .mascot-q {
+      position: fixed;
+      right: 3vw;
+      bottom: 3vh;
+      width: clamp(120px, 15vw, 200px);
+      z-index: 999;
+      animation: rock 3.5s ease-in-out infinite;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      pointer-events: none;
+    }
+    /* Mascot Ink-style */
+    .mascot-ink {
+      position: fixed;
+      left: 0vw;
+      bottom: 0;
+      height: 80vh;
+      z-index: 100;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+      pointer-events: none;
+      object-fit: contain;
+      object-position: left bottom;
+    }
+    @keyframes rock {
+      0% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+      100% { transform: rotate(-5deg); }
+    }
+
+    
+    .btn-music {
+      background: rgba(0, 0, 0, 0.6);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.3s;
+    }
+
+    .btn-music:hover {
+      background: rgba(201, 162, 39, 0.2);
+    }
+
+    .sb-left { flex: 1; display: flex; align-items: center; }
+    #gem-bar { flex: 1; justify-content: center; align-items: center; gap: .4rem; }
+    .sb-right { flex: 1; display: flex; justify-content: flex-end; }
+    #state-txt { font-size: 1.15rem; margin-left: 0.5rem; }
+</style>
+</head>
+<body>
+
+<audio id="bgm" src="Music_Trap_Drama.mp3" autoplay loop></audio>
+<audio id="sfx-awards" src="Awards.m4a"></audio>
+
+
+<img src="tao.png" class="mascot-q" alt="陶淵明 Q版畫像">
+<img src="tao_ink.png" class="mascot-ink" alt="陶淵明 水墨畫像">
+
+
+<!-- ══ STATE BAR with gems top-right ══ -->
+<header id="state-bar">
+  <div class="sb-left">
+    <span class="sb-dot"></span>
+    <span id="state-txt">[系統狀態紀錄 | 準備進入密室...]</span>
+  </div>
+  <div id="gem-bar"></div>
+  <div class="sb-right">
+    <button id="btn-music" class="btn-music" onclick="toggleMusic()">🎵 音樂: 播放中</button>
+  </div>
+</header>
+
+<!-- ══ APP ══ -->
+<main id="app">
+
+  <!-- ★ INTRO ★ -->
+  <section id="s-intro" class="screen active">
+    <div class="badge">🔐 知識密室逃脫</div>
+    <h1 class="main-title">陶淵明知識密室</h1>
+    <p class="main-sub">尋訪五柳園田，解鎖隱逸詩人的豁達智慧</p>
+    <p class="intro-desc">
+      勇者，你已踏入一座封印著真理的虛擬密室。<br>
+      通過五道考驗，收集五個 <strong style="color:var(--gold-l)">密碼碎片</strong>，<br>
+      最終組合出那句解開大門的金鑰密語！
+    </p>
+    <div class="rules-box">
+      <h3>📜 闖關規則</h3>
+      <ul>
+        <li>共有五關，依序通過才能取得碎片</li>
+        <li>答對方可前進下一關，答錯將得到提示</li>
+        <li>第五關通過後，進行最終密語試煉</li>
+        <li>最終答對，獲得專屬「半把魔法金鑰」！</li>
+      </ul>
+    </div>
+    <button class="btn-start" id="btn-start" onclick="G.start()">🗝️ 進入密室</button>
+  </section>
+
+  <!-- ★ LEVEL ★ -->
+  <section id="s-level" class="screen">
+    <div class="lv-header">
+      <div class="lv-badge">
+        <div class="lv-num" id="lv-num">1</div>
+        <div class="lv-info">
+          <h2 id="lv-title">第一關</h2>
+          <p  id="lv-sub">現象推論</p>
+        </div>
+      </div>
+      <span class="type-tag" id="lv-tag">🔍 選擇題</span>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-lbl">💡 預習小提示</div>
+      <div id="tip-body"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-lbl">▸ 闖關題目</div>
+      <div class="q-text" id="q-body"></div>
+    </div>
+
+    <div id="ans-area"></div>
+
+    <div class="fb" id="fb"></div>
+    <div class="frag-rev" id="frag-rev">
+      <div class="fr-lbl">🔑 獲得密碼碎片</div>
+      <div class="fr-txt" id="fr-txt"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-p" id="btn-submit" onclick="G.submit()">確認答案</button>
+      <button class="btn btn-s" id="btn-next"  style="display:none" onclick="G.next()">前往下一關 →</button>
+      <button class="btn btn-s" id="btn-clear" style="display:none" onclick="G.clearOrd()">重新排序</button>
+    </div>
+  </section>
+
+  <!-- ★ FINAL ★ -->
+  <section id="s-final" class="screen">
+    <h2 class="fs-ttl">⚔️ 最終試煉</h2>
+    <p class="fs-sub">你已收集所有碎片！請完成最終答題，解開密室封印。</p>
+    <div class="frag-asm" id="frag-asm"></div>
+    <div class="asm-box">
+      <div class="asm-lbl">✨ 組合後的完整密語</div>
+      <div class="asm-txt" id="asm-txt"></div>
+    </div>
+    <div class="q-card">
+      <div class="q-lbl">▸ 閱讀理解最終題</div>
+      <div class="q-text" id="final-q"></div>
+    </div>
+    <div id="final-ans"></div>
+    <div class="fb" id="final-fb"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="btn-final-sub"  onclick="G.submitFinal()">確認最終答案</button>
+      <button class="btn btn-p" id="btn-to-victory" style="display:none" onclick="G.victory()">🏆 前往榮耀時刻！</button>
+    </div>
+  </section>
+
+  <!-- ★ VICTORY ★ -->
+  <section id="s-victory" class="screen">
+    <div class="v-emoji">🎉🏆🎉</div>
+    <h2 class="v-title">挑戰成功！</h2>
+    <p class="v-sub">你的智慧已通過五柳先生的考驗，封印已全數解除！</p>
+    <div class="name-input-wrap" id="name-input-area">
+      <p class="key-lbl" style="margin-bottom:.9rem;font-size:1rem">請輸入您的姓名，領取專屬魔法鑰匙證書：</p>
+      <input type="text" id="winner-name" class="name-field" placeholder="輸入姓名…" maxlength="20">
+      <button class="btn-cert" onclick="G.generateCert()">🎖️ 領取魔法鑰匙證書</button>
+    </div>
+
+    <div id="cert-area" style="display:none">
+      <div class="cert-box">
+        <span class="cert-corner tl">❖</span>
+        <span class="cert-corner tr">❖</span>
+        <span class="cert-corner bl">❖</span>
+        <span class="cert-corner br">❖</span>
+        <div class="cert-header-lbl">🏛️ 東晉靖節先生居所 · 園田隱逸密室認證</div>
+        <hr class="cert-divider">
+        <div class="cert-key-ico">🗝️</div>
+        <div class="cert-title">魔法鑰匙持有證書</div>
+        <div class="cert-subtitle">Certificate of the Magic Key · Jin Dynasty</div>
+        <hr class="cert-divider">
+        <div class="cert-name-lbl">茲 證 明</div>
+        <div class="cert-name" id="cert-name-display">──</div>
+        <div class="cert-desc">
+          已通過陶淵明知識密室的全部五道考驗<br>
+          以率真與豁達解除封印，獲授此魔法鑰匙！
+        </div>
+        <div class="cert-date" id="cert-date" style="text-align: right; margin-top: 1rem; font-size: 0.9rem; color: var(--txt-d);"></div>
+      </div>
+    </div>
+    <button class="btn-home" style="margin-top:1.5rem;display:block;margin-left:auto;margin-right:auto;" onclick="G.goHome()">↩ 返回密室大門</button>
+  </section>
+
+<script>
+const FRAGS=['五柳先生陶潛','以率真本性','歸隱園田','化為永恆','隱逸詩宗'];
+const FULL_SENT='五柳先生陶潛，以率真本性，歸隱園田，化為永恆隱逸詩宗。';
+
+/* ══════════════════════════════════════
+   LEVEL DATA  — each level has questions[] array
+   (at least 3 per level; one is picked randomly)
+══════════════════════════════════════ */
+const LVS=[
+/* ────────────── LEVEL 1 ────────────── */
+{
+  id:1, type:'choice', title:'第一關', sub:'現象推論', tag:'🔍 現象推論', frag:FRAGS[0],
+  tip:'陶淵明生活在東晉末年，雖出身世族後代，本是晉代名將陶侃的曾孫，但到他這代家道中落。他曾數度出仕，但因生性率真、不合世俗，最終選擇隱居園田，開創了質樸自然的田園詩風。',
+  questions:[
+    {
+      q:'陶淵明曾任江州祭酒、建威參軍、彭澤縣令等職，但最後因不願「為五斗米折腰」而毅然辭官歸隱，並寫下哪篇名作以表明歸隱田園的決心？',
+      opts:['〈歸去來辭〉──宣示與官場決裂，表達歸隱之樂','〈桃花源記〉──描繪沒有壓迫的烏托邦理想世界','〈五柳先生傳〉──以幽默率真的筆調為自己作傳','〈歸園田居〉──描繪隱居後躬耕勞動的恬靜生活'],
+      correct:0,
+      hints:['提示：此文寫於他彭澤令卸任歸隱之時，標題中有「歸去來」三個字。'],
+      explain:'答對了！陶淵明在41歲時，因不願「為五斗米折腰」迎接督郵，毅然辭去彭澤縣令，並寫下著名的〈歸去來辭〉，宣示回歸大自然與清白自守的決心。'
+    },
+    {
+      q:'陶淵明在〈五柳先生傳〉中自述其讀書習慣為「好讀書，不求甚解；每有會意，便欣然忘食。」這裡的「不求甚解」最適合如何理解？',
+      opts:['讀書敷衍了事，不求甚解，只求快速翻完','讀書不刻意鑽研字句枝節，而是注重精神意旨的領會與情感共鳴','因為不識字，只能大概猜測書本的意思','讀書只為了應付科舉考試，不需要深刻理解'],
+      correct:1,
+      hints:['提示：重點在後面的「每有會意，便欣然忘食」，強調「會意」即領會書中的真諦與意旨。'],
+      explain:'答對了！「不求甚解」並非指讀書草率，而是指他不鑽牛角尖、不拘泥於字句的枝節，重在心領神會、取得思想上的共鳴，這正體現了他隨性自然的學習態度。'
+    },
+    {
+      q:'後世文人對陶淵明的文學成就推崇備至，唐宋詩人多受其影響。南朝鍾嶸在《詩品》中對其有著極高的評價，請問他是如何稱呼陶淵明的？',
+      opts:['「田園詩人之宗」──開創田園詩派的宗師','「古今隱逸詩人之宗」──隱逸詩人的最高典範','「山水詩派之祖」──開創描繪山水自然風光的先河','「詩界之聖」──詩歌技藝通神、體現聖賢境界'],
+      correct:1,
+      hints:['提示：鍾嶸在《詩品》中評價陶淵明是「古今______詩人之宗」，強調他隱居不仕、追求真我的人格特質。'],
+      explain:'答對了！鍾嶸在《詩品》中讚譽陶淵明為「古今隱逸詩人之宗」，肯定他以生命實踐隱逸風骨，並將隱逸心境化為傳世佳作的文學地位。'
+    }
+  ]
+},
+/* ────────────── LEVEL 2 ────────────── */
+{
+  id:2, type:'choice-text', title:'第二關', sub:'選項辨析', tag:'🧠 高階辨析', frag:FRAGS[1],
+  tip:'陶淵明的詩文外表平淡，實則內蘊深厚。他將飲酒、讀書、躬耕等平凡的生活點滴，融入對人生真諦的體悟，呈現出悠然自得、物我兩忘的高超境界。',
+  questions:[
+    {
+      q:'在〈飲酒．其五〉中，「問君何能爾？心遠地自偏」兩句是全詩的靈魂。請選出對「心遠地自偏」最恰當的解析：<br><strong>請先選出最佳答案，再用一句話說明你判斷的關鍵理由。</strong>',
+      opts:['只要居住在偏遠的郊區或山林，心靈自然就能擺脫世俗的煩惱','只要內心遠離了對名利俗世的執著，所處的環境不論多嘈雜，自然也會顯得幽靜','詩人因為沒有車馬來訪，所以內心感到孤獨寂寞，覺得地方偏僻','必須透過飲酒來麻醉心靈，才能在吵雜的環境中獲得暫時的平靜'],
+      correct:1,
+      txtPH:'請說明「心遠」與環境偏僻之間的關係……',
+      txtKW:['內心','主觀','精神','名利','世俗','執著','塵囂','環境','喧囂','心靈','遠離'],
+      hints:{wrong:'提示：詩中前兩句是「結廬在人境，而無車馬喧」──屋子在人煙稠密之處卻沒有喧囂，這是外在環境的影響，還是內心境界的作用？',reason:'選項正確！但請更具體說明：「心遠」（心境遠離塵俗執著）如何決定了外在環境的感受？'},
+      explain:'完全正確！「心遠地自偏」說明了境由心造的道理──只要內心遠離了名利塵囂，即使「結廬在人境」，心靈也依然能保有安寧與清靜，這是主觀心境對客觀環境的超脫。'
+    },
+    {
+      q:'〈歸園田居．其一〉中寫道：「羈鳥戀舊林，池魚思故淵。開荒南野際，守拙歸園田。」詩中以「羈鳥」和「池魚」自比。請選出最能解釋這兩個意象的選項：<br><strong>請先選出最佳答案，再用一句話說明你判斷的關鍵理由。</strong>',
+      opts:['說明詩人喜愛觀察自然生態，特別是鳥類與魚類的習性','象徵官場生活如同牢籠與池塘般束縛，並表達自己對重返自然與自由生活的強烈渴望','比喻自己家境清貧，只能像野鳥與池魚一樣過著簡陋的生活','暗示自己被迫離開家鄉，對過去的生活充滿無奈與不捨'],
+      correct:1,
+      txtPH:'請說明為何「羈鳥」與「池魚」能精準對照他的仕途與隱居……',
+      txtKW:['官場','束縛','籠','牢籠','自由','渴望','回歸','大自然','田園','隱居','心境'],
+      hints:{wrong:'提示：「羈鳥」是被關在籠裡的鳥，「池魚」是被困在魚池的魚，牠們思念的「舊林」和「故淵」代表什麼？',reason:'選項正確！但請更具體說明：這兩個比喻如何對照他在「官場」與「大自然」之間的心境變化？'},
+      explain:'完全正確！「羈鳥」與「池魚」生動地比喻了詩人在官場（塵網）中失去自由的痛苦，而「舊林」與「故淵」則象徵他無比嚮往的田園與大自然，精準傳達了回歸真我的渴望。'
+    },
+    {
+      q:'〈雜詩〉中寫道：「盛年不重來，一日難再晨。及時當勉勵，歲月不待人。」這段名句常被後世用來勉勵學子。請選出最符合陶淵明在此想表達的人生態度之選項：<br><strong>請先選出最佳答案，再用一句話說明你判斷的關鍵理由。</strong>',
+      opts:['時光一去不回，應當在有限的人生中珍惜光陰，積極自我勉勵，活出真我價值','既然時間流逝無情，人應當及時行樂，不要為未來做任何規劃與努力','人生短暫如塵土，應當早日考取功名，光宗耀祖','歲月不饒人，因此必須努力鍛鍊身體，以追求長生不老的秘訣'],
+      correct:0,
+      txtPH:'請說明「及時當勉勵」在陶淵明人生脈絡中的深刻意涵……',
+      txtKW:['珍惜','時光','光陰','生命','價值','有限','短暫','勉勵','活在當下','真我'],
+      hints:{wrong:'提示：陶淵明在詩中感嘆「人生無根蒂，飄如陌上塵」，在生命如此短暫無常的前提下，他呼籲「及時當勉勵」是為了追求什麼？',reason:'選項正確！但請更具體說明：在有限的生命中，「及時勉勵」對於體現生命價值有何意義？'},
+      explain:'完全正確！陶淵明感嘆人生短暫無常，因此呼籲大家應當珍惜韶華、自我勉勵，不要虛度光陰，要在有限的生命中堅守氣節，活出真實的生命價值。'
+    }
+  ]
+},
+/* ────────────── LEVEL 3 ────────────── */
+{
+  id:3, type:'text', title:'第三關', sub:'邏輯除錯', tag:'🔬 批判思考', frag:FRAGS[2],
+  tip:'在探討歷史人物與文學作品時，應避免「主觀偏見」、「以偏概全」或「張冠李戴」的推論謬誤。請仔計檢驗以下敘述中的邏輯漏洞。',
+  questions:[
+    {
+      q:'以下敘述中藏有一個嚴重的<strong>邏輯謬誤</strong>（過度推論與偏見）。請找出錯誤所在，並簡要說明應如何更正：<div class="quote-block">「陶淵明因天性熱愛飲酒但家境清苦，在彭澤縣令任上，竟將公田全部種植『秫』（黏高粱）用以釀酒。由此可知，陶淵明是一名極度不負責任、自私自利的官員，他完全不關心百姓的糧食問題，只為滿足一己的私慾。」</div>',
+      txtPH:'請指出這段陳述如何以偏概全或忽略了什麼事實……',
+      txtKW:['秫','主食','夫人','五斗米','仕途','無奈','率真','官場','非全部','過度','偏頗'],
+      hints:['提示：陶淵明當官是為了養家口（「聊欲弦歌為三逕之資」），他種秫釀酒是率真本性的體現，且歷史上他是在妻子與官員的協調下（「令留二頃五十畝植秫，五十畝植秔」）有合理規劃的。將此行為直接等同於「自私自利不顧百姓」犯了什麼推論錯誤？'],
+      explain:'完全正確！這段敘述犯了「過度推論」與「道德綁架」的謬誤。陶淵明幾度出仕皆因生活所迫，種秫釀酒是他率真好酒個性的體現，且當時公田亦有種植粳稻（主食）的合理規劃，不能草率將其定性為自私且不關心百姓的惡官。'
+    },
+    {
+      q:'以下敘述中藏有一個嚴重的<strong>邏輯謬誤</strong>（因果混淆或張冠李戴）。請找出錯誤所在，並簡要說明應如何更正：<div class="quote-block">「陶淵明的曾祖父陶侃是東晉的開國元勳，每日早晨搬運一百塊磚頭到屋外，晚上再搬回屋內，這就是『陶侃運甓』的美談。既然曾祖父如此自律刻苦，陶淵明後來卻選擇辭官歸隱，每天喝酒、讀書，這種生活方式顯然徹底背叛了曾祖父自律奮進的家族精神，是墮落的表現。」</div>',
+      txtPH:'請指出為何這兩人的自律與選擇不能直接對立……',
+      txtKW:['不同','自律','精神','堅守','方式','氣節','選擇','價值','並非','墮落','曾祖父'],
+      hints:['提示：曾祖父陶侃是為了「治理中原」而鍛鍊意志；陶淵明辭官則是為了「堅守氣節、不隨波逐流」，兩者的生活軌跡與追求不同，能直接稱陶淵明為「墮落」嗎？'],
+      explain:'完全正確！這段敘述犯了「張冠李戴」與「雙重標準」的謬誤。陶侃搬磚是為了經世致用，而陶淵明辭官隱居則是為了堅守儒家的「獨善其身」與道家的「順應自然」氣節，不願在黑暗官場妥協。兩人在不同領域展現自律與堅持，隱逸並非墮落。'
+    },
+    {
+      q:'以下敘述中藏有一個嚴重的<strong>邏輯謬誤</strong>（過度概括）。請找出錯誤所在，並簡要說明應如何更正：<div class="quote-block">「陶淵明在〈桃花源記〉中描繪了一個沒有壓迫、沒有賦稅、人人自給自足且和樂融融的理想社會。這充分證明了陶淵明是一位卓越的社會制度改革家，他撰寫這篇文章的目的，就是為了向東晉朝廷提出具體可行的政治體制改革方案。」</div>',
+      txtPH:'請指出〈桃花源記〉的真實性質與寫作目的……',
+      txtKW:['理想','烏托邦','寄託','虛構','避世','精神','並非','改革','方案','文學'],
+      hints:['提示：桃花源是真實存在的社會還是文學虛構的烏托邦？陶淵明寫作它是為了解決東晉政治問題，還是提供心靈的避難所？'],
+      explain:'完全正確！這段敘述犯了「過度概括」與「曲解原意」的謬誤。〈桃花源記〉所描繪的是一個文學虛構的烏托邦，是陶淵明對黑暗現實失望後的心靈寄託，而非向朝廷提出的具體政治改革方案。'
+    }
+  ]
+},
+/* ────────────── LEVEL 4 ────────────── */
+{
+  id:4, type:'order', title:'第四關', sub:'因果重組', tag:'📅 邏輯排序', frag:FRAGS[3],
+  tip:'陶淵明的一生在「大濟蒼生」的儒家抱負與「回歸自然」的隱逸渴望之間擺盪。他的生平大事件，有著清晰的年代與心路歷程脈絡。',
+  questions:[
+    {
+      q:'請將以下五個陶淵明生平的重要事件，依照發生的<strong>時間先後順序</strong>排列。<br>（依序點擊事件卡片，標記第 1 到第 5 的順序；點擊已標記的卡片可取消該位置之後的排序）',
+      events:[
+        {txt:'少年時好讀儒家六經，心懷壯志，奠定深厚的文學與儒學基礎',ord:1},
+        {txt:'因家庭貧困、生活所迫，開始出任江州祭酒等官職，初涉官場',ord:2},
+        {txt:'41歲出任彭澤縣令，因不願為五斗米向督郵折腰，在任僅80餘日即解綬辭官',ord:3},
+        {txt:'歸隱田園，親自躬耕開荒，寫下〈歸園田居〉與〈飲酒〉等傳世名作',ord:4},
+        {txt:'晚年生活極其清苦，甚至曾乞食，但仍堅守節操，安然逝世，享年六十三歲',ord:5}
+      ],
+      dispOrd:[2,0,4,3,1],
+      hints:['提示：依年齡推算：少年苦讀（1）→青年為生計出仕（2）→中年彭澤辭官（3）→隱居園田躬耕（4）→晚年清苦過世（5）。'],
+      explain:'排序完全正確！陶淵明一生由儒家的入世壯志出發，歷經官場磨難，於41歲斷然辭官歸隱，在躬耕與飲酒寫作中安頓心靈，晚年堅貞自守以終，是一首真誠的生命之歌。'
+    },
+    {
+      q:'請將以下五個陶淵明生平的重要事件，依照發生的<strong>時間先後順序</strong>排列。<br>（依序點擊事件卡片，標記第 1 到第 5 的順序；點擊已標記的卡片可取消該位置之後的排序）',
+      events:[
+        {txt:'曾祖父陶侃立下赫赫戰功，成為東晉名將與開國勳臣，留下搬磚自律佳話',ord:1},
+        {txt:'陶淵明成年後因家道衰微，為了奉養父母與妻兒，不得不數度出仕',ord:2},
+        {txt:'在官場中深感黑暗與虛偽，心靈飽受束縛，如同「羈鳥」與「池魚」',ord:3},
+        {txt:'毅然決然告別官場，寫下〈歸去來辭〉以明志，開啟隱居田園的生活',ord:4},
+        {txt:'隱居數年後家中不幸遭遇大火，草屋付之一炬，生活陷入窘迫與貧困',ord:5}
+      ],
+      dispOrd:[3,1,0,4,2],
+      hints:['提示：曾祖父開國功勳在最先（1），接著是陶淵明成年出仕（2），在官場痛苦（3），辭官隱居（4），隱居後失火（5）。'],
+      explain:'排序完全正確！曾祖父陶侃的輝煌在先，陶淵明承接衰微家運，出仕後在官場備受折磨，最終選擇辭官歸隱，雖然晚年遭遇火災生活窘迫，但依然保持樂天知命。'
+    },
+    {
+      q:'請將以下五個陶淵明生平的重要事件，依照發生的<strong>時間先後順序</strong>排列。<br>（依序點擊事件卡片，標記第 1 到第 5 的順序；點擊已標記的卡片可取消該位置之後的排序）',
+      events:[
+        {txt:'在彭澤縣令任上，不願為五斗米折腰迎接俗吏，毅然決定掛冠歸去',ord:1},
+        {txt:'寫下〈歸去來辭〉宣示「守拙歸園田」，正式開始躬耕自足的隱士生涯',ord:2},
+        {txt:'體驗田園勞動的艱辛與快樂，創作出大量風格質樸自然、平淡有味的詩篇',ord:3},
+        {txt:'撰寫寓言名篇〈桃花源記〉，假託漁人故事寄託他對理想社會的終極嚮往',ord:4},
+        {txt:'拒絕朝廷降旨徵召為著作郎的最後邀請，在安貧樂道中與世長辭',ord:5}
+      ],
+      dispOrd:[2,4,0,3,1],
+      hints:['提示：彭澤掛冠（1）→寫歸去來辭隱居（2）→躬耕寫田園詩（3）→撰寫桃花源記（4）→拒絕朝廷最後徵召病逝（5）。'],
+      explain:'排序完全正確！從彭澤掛冠、歸去來辭隱居開始，陶淵明在田園中創作了大量佳作，包括晚期的〈桃花源記〉，最後他堅拒朝廷重召，高潔地結束了一生。'
+    }
+  ]
+},
+/* ────────────── LEVEL 5 ────────────── */
+{
+  id:5, type:'choice', title:'第五關', sub:'知識遷移', tag:'🌍 跨域遷移', frag:FRAGS[4],
+  tip:'陶淵明的隱逸與率真精神在現代社會中依然閃閃發光。當我們面對高壓競爭、功利取向與身心俱疲時，他的生命抉擇能給予現代人深刻的省思與解藥。',
+  questions:[
+    {
+      q:'現代社會中，有許多高薪白領在經歷長期的超時加班與職場人際內耗後，決定主動「降薪」或「轉職」到步調較慢、能兼顧生活品質與個人興趣的工作。這種拒絕被物質綁架、追求心靈自由的態度，最符合陶淵明哪一種精神？',
+      opts:['「陶侃運甓」──在逆境中依然嚴格自律，刻苦自立的精神','「不為五斗米折腰」──拒絕為物質利益而妥協個人尊嚴與心靈自由的風骨','「好讀書，不求甚解」──不計較工作細節，凡事差不多就好的工作態度','「造飲輒盡」──及時行樂，將所有收入花在享樂與杯中物的消費觀點'],
+      correct:1,
+      hints:['提示：關鍵字是「拒絕被物質綁架，追求心靈自由與個人尊嚴」，這正是他不願為微薄俸祿向俗吏低頭的代名詞。'],
+      explain:'完美！這正是現代版的「不為五斗米折腰」──當物質財富（五斗米）與個人的尊嚴、心靈自由產生衝突時，毅然選擇後者，這正是陶淵明風骨在現代的完美轉譯。'
+    },
+    {
+      q:'現代都市生活步調緊湊，許多人倡導「極簡主義」與「慢活生活」，主張捨棄多餘的社交與物慾，在自家庭院種植花草、閱讀書籍，在大自然中尋找內心的平靜。這種現代生活美學，與陶淵明哪一組名句的意境最為契合？',
+      opts:['朱門酒肉臭，路有凍死骨──揭露社會貧富差距的殘酷','採菊東籬下，悠然見南山──在平凡勞動中與自然融為一體，達到物我兩忘','盛年不重來，一日難再晨──感嘆時光飛逝，督促自己不斷奮鬥','羈鳥戀舊林，池魚思故淵──表達身處束縛中，對自由的痛苦思念'],
+      correct:1,
+      hints:['提示：慢活、極簡、在自然中獲得內心的平靜自得，對應他最著名的「採菊」與「悠然看山」的名句。'],
+      explain:'完美！「採菊東籬下，悠然見南山」正是極簡慢活的最高境界──在最簡單的採菊活動中，無意間抬頭看見南山，心靈與大自然完美相融，悠然自得。'
+    },
+    {
+      q:'大學生小明讀書時，不再死記硬背考試考題以爭取滿分，而是抱持著好奇心去理解書中的核心思想。當他真正讀懂作者的情感並獲得啟發時，會感到無比的快樂與滿足。小明的讀書情趣最接近陶淵明的哪種表現？',
+      opts:['「讀書會意，欣然忘食」──注重精神意旨的領會，獲得純粹的知識喜悅','「造飲輒盡，期在必醉」──追求極致的感官享受與麻醉','「種秫釀酒」──善用生活巧思，解決生活實質問題','「大庇天下寒士俱歡顏」──推己及人，懷抱拯救天下蒼生的宏大志向'],
+      correct:0,
+      hints:['提示：注重理解書中核心思想、獲得精神快樂，對應「會意」與「忘食」。'],
+      explain:'完全正確！小明注重領會精神、享受讀書本身的樂趣，完美契合了陶淵明「每有會意，便欣然忘食」的讀書情趣，這才是閱讀與學習最純粹的快樂。'
+    }
+  ]
+}
+];
+
+/* ══════════════════════════════════════
+   FINAL QUESTION
+══════════════════════════════════════ */
+const FINAL_Q={
+  txt:'根據你組合出的密語「五柳先生陶潛，以率真本性，歸隱園田，化為永恆隱逸詩宗」，請問陶淵明能開創田園詩派並被尊為隱逸詩人之宗，其最根本的精神動力是什麼？',
+  opts:['對官場功名利祿的強烈渴望，試圖透過寫作引起朝廷注意','堅守內心的率真本性，拒絕官場虛偽而回歸自然田園','曾祖父陶侃傳承下來的龐大財富，使其一生無衣食之憂','對華麗駢文與嚴格宮廷格律的極致雕琢與美學追求'],
+  correct:1,
+  hint:'提示：密語中明確提到了哪種核心動力？（「以______本性」）',
+  explain:'完全正確！密語明確點出：陶淵明以「率真本性」為人生的最高追求，正是這份堅守真我、拒絕官場虛偽的率真，驅使他歸隱園田，開創出永恆的隱逸詩宗篇章！'
+};
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+const ST={ level:1, frags:[], selOpt:-1, ordSeq:[], answered:false, curQ:null };
+
+/* ══════════════════════════════════════
+   PARTICLES
+══════════════════════════════════════ */
+(function(){
+  const clrs=['#c9a227','#e07030','#9b59b6','#f0d060','#7b2fff'];
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div'); p.className='ptc';
+    const s=1+Math.random()*2;
+    p.style.cssText=`left:${Math.random()*100}%;width:${s}px;height:${s}px;background:${clrs[i%clrs.length]};--d:${5+Math.random()*9}s;--dl:${-Math.random()*12}s;--dr:${(Math.random()-.5)*60}px`;
+    document.body.appendChild(p);
+  }
+})();
+
+/* ══════════════════════════════════════
+   HELPERS
+══════════════════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function updateStateBar(){
+  const fn=ST.frags.length?ST.frags.join('、'):'無';
+  const lt=ST.level<=5?`第 ${ST.level} 關`:'最終試煉';
+  document.getElementById('state-txt').textContent=`[系統狀態紀錄 | 當前關卡：${lt} | 已蒐集：${ST.frags.length}/5]`;
+}
+function initGems(){
+  const bar=document.getElementById('gem-bar');
+  bar.innerHTML=''; bar.classList.add('vis');
+  FRAGS.forEach((f,i)=>{
+    const d=document.createElement('div'); d.className='gdot'; d.id=`gd-${i}`;
+    d.textContent='\uD83D\uDDDD\uFE0F';
+    const tip=document.createElement('span'); tip.className='gtip'; tip.textContent=`碎片${i+1}：待蒐集`;
+    d.appendChild(tip); bar.appendChild(d);
+  });
+}
+function collectGem(idx){
+  const d=document.getElementById(`gd-${idx}`);
+  if(d){ d.classList.add('got'); d.querySelector('.gtip').textContent=`碎片${idx+1}：${FRAGS[idx]}`; }
+}
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2100);
+}
+function showFb(ok,ttl,body,tid='fb'){
+  const el=document.getElementById(tid);
+  el.className=`fb ${ok?'ok-fb':'ng-fb'}`;
+  el.innerHTML=`<div class="fb-ttl">${ttl}</div>${body}`;
+}
+function hideFb(tid='fb'){ const el=document.getElementById(tid); el.className='fb'; el.innerHTML=''; }
+
+/* ══════════════════════════════════════
+   RENDER LEVEL
+══════════════════════════════════════ */
+function renderLevel(n){
+  const lv=LVS[n-1];
+  // Pick random question
+  ST.curQ=lv.questions[Math.floor(Math.random()*lv.questions.length)];
+  const q=ST.curQ;
+  ST.selOpt=-1; ST.ordSeq=[]; ST.answered=false;
+
+  document.getElementById('lv-num').textContent=n;
+  document.getElementById('lv-title').textContent=lv.title;
+  document.getElementById('lv-sub').textContent=lv.sub;
+  document.getElementById('lv-tag').textContent=lv.tag;
+  document.getElementById('tip-body').textContent=lv.tip;
+  document.getElementById('q-body').innerHTML=q.q;
+  hideFb(); document.getElementById('frag-rev').className='frag-rev';
+
+  const aa=document.getElementById('ans-area'); aa.innerHTML='';
+
+  if(lv.type==='choice'||lv.type==='choice-text'){
+    const ol=document.createElement('div'); ol.className='opts'; ol.id='opts';
+    q.opts.forEach((o,i)=>{
+      const b=document.createElement('button'); b.className='opt-btn'; b.id=`opt-${i}`;
+      b.innerHTML=`<span class="opt-ltr">${'ABCD'[i]}</span><span>${o}</span>`;
+      b.onclick=()=>selOpt(i); ol.appendChild(b);
+    });
+    aa.appendChild(ol);
+    if(lv.type==='choice-text'){
+      const ta=document.createElement('div'); ta.className='txt-area';
+      ta.innerHTML=`<div class="txt-lbl">✏️ 請用一句話說明你判斷的關鍵理由：</div><textarea class="ans-in" id="txt-in" placeholder="${q.txtPH}" rows="3"></textarea>`;
+      aa.appendChild(ta);
+    }
+  }
+  else if(lv.type==='text'){
+    const ta=document.createElement('div'); ta.className='txt-area';
+    ta.innerHTML=`<div class="txt-lbl">✏️ 請找出錯誤並說明更正方式：</div><textarea class="ans-in" id="txt-in" placeholder="${q.txtPH}" rows="4"></textarea>`;
+    aa.appendChild(ta);
+  }
+  else if(lv.type==='order'){
+    const grid=document.createElement('div'); grid.className='ord-grid'; grid.id='ord-grid';
+    q.dispOrd.forEach((evIdx,dp)=>{
+      const ev=q.events[evIdx];
+      const c=document.createElement('div'); c.className='ord-card'; c.id=`oc-${dp}`;
+      c.innerHTML=`<div class="ord-n" id="on-${dp}">？</div><div class="ord-txt">${ev.txt}</div>`;
+      c.onclick=()=>clickOrd(dp); grid.appendChild(c);
+    });
+    aa.appendChild(grid);
+  }
+
+  document.getElementById('btn-submit').style.display='inline-flex';
+  document.getElementById('btn-submit').disabled=false;
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('btn-clear').style.display=lv.type==='order'?'inline-flex':'none';
+  updateStateBar();
+}
+
+function selOpt(i){
+  if(ST.answered) return;
+  ST.selOpt=i;
+  document.querySelectorAll('.opt-btn').forEach((b,j)=>b.classList.toggle('sel',j===i));
+}
+
+function clickOrd(dp){
+  if(ST.answered) return;
+  const pos=ST.ordSeq.indexOf(dp);
+  if(pos!==-1) ST.ordSeq=ST.ordSeq.slice(0,pos);
+  else if(ST.ordSeq.length<5) ST.ordSeq.push(dp);
+  for(let i=0;i<5;i++){
+    const n=document.getElementById(`on-${i}`), c=document.getElementById(`oc-${i}`);
+    const p=ST.ordSeq.indexOf(i);
+    if(p!==-1){n.textContent=p+1;c.classList.add('num');}
+    else{n.textContent='？';c.classList.remove('num');}
+  }
+}
+
+/* ══════════════════════════════════════
+   GAME OBJECT
+══════════════════════════════════════ */
+
+function toggleMusic() {
+  const bgm = document.getElementById('bgm');
+  const btn = document.getElementById('btn-music');
+  if (bgm.paused) {
+    bgm.play().catch(e => console.log('Autoplay blocked:', e));
+    btn.textContent = '🎵 音樂: 播放中';
+  } else {
+    bgm.pause();
+    btn.textContent = '🎵 音樂: 關閉';
+  }
+}
+
+const G={
+  start(){
+    ST.level=1; ST.frags=[];
+    initGems(); updateStateBar();
+    renderLevel(1); showScreen('s-level');
+  },
+
+  submit(){
+    if(ST.answered) return;
+    const lv=LVS[ST.level-1], q=ST.curQ;
+    let ok=false;
+
+    /* ─ choice ─ */
+    if(lv.type==='choice'){
+      if(ST.selOpt===-1){toast('請先選擇一個答案！');return;}
+      ok=ST.selOpt===q.correct;
+      if(!ok){
+        document.getElementById(`opt-${ST.selOpt}`).classList.add('ng');
+        showFb(false,'❌ 再想想！',q.hints[0]);
+        ST.answered=true;
+        setTimeout(()=>{
+          ST.answered=false; ST.selOpt=-1;
+          document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('ok','ng','sel'));
+          hideFb();
+        },2800); return;
+      }
+      document.querySelectorAll('.opt-btn').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('ok');});
+    }
+
+    /* ─ choice-text ─ */
+    else if(lv.type==='choice-text'){
+      if(ST.selOpt===-1){toast('請先選擇一個答案！');return;}
+      const ti=(document.getElementById('txt-in')||{}).value||'';
+      if(!ti.trim()){toast('請輸入你的判斷理由！');return;}
+      const rOpt=ST.selOpt===q.correct;
+      const goodR=q.txtKW.some(k=>ti.includes(k));
+      if(!rOpt){
+        document.getElementById(`opt-${ST.selOpt}`).classList.add('ng');
+        showFb(false,'❌ 選項有誤！',q.hints.wrong);
+        ST.answered=true;
+        setTimeout(()=>{
+          ST.answered=false; ST.selOpt=-1;
+          document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('ok','ng','sel'));
+          hideFb();
+        },2800); return;
+      }
+      if(!goodR){ showFb(false,'✏️ 選項正確！請補充理由',q.hints.reason); return; }
+      ok=true;
+      document.querySelectorAll('.opt-btn').forEach((b,i)=>{b.disabled=true;if(i===q.correct)b.classList.add('ok');});
+    }
+
+    /* ─ text ─ */
+    else if(lv.type==='text'){
+      const ti=(document.getElementById('txt-in')||{}).value||'';
+      if(!ti.trim()){toast('請輸入你的答案！');return;}
+      const hasKey=q.txtKW.some(k=>ti.includes(k));
+      if(!hasKey){showFb(false,'❌ 再思考看看！',q.hints[0]);return;}
+      ok=true;
+    }
+
+    /* ─ order ─ */
+    else if(lv.type==='order'){
+      if(ST.ordSeq.length<5){toast('請將所有五個事件都排入順序！');return;}
+      let allOk=true;
+      ST.ordSeq.forEach((dp,si)=>{
+        const evIdx=q.dispOrd[dp], ev=q.events[evIdx];
+        const c=document.getElementById(`oc-${dp}`), n=document.getElementById(`on-${dp}`);
+        if(ev.ord===si+1){c.classList.add('ok');n.textContent=si+1;}
+        else{c.classList.add('ng');n.textContent=si+1;allOk=false;}
+      });
+      if(!allOk){
+        showFb(false,'❌ 順序有誤！',q.hints[0]);
+        ST.answered=true;
+        setTimeout(()=>{
+          ST.answered=false; G.clearOrd();
+          document.querySelectorAll('.ord-card').forEach(c=>c.classList.remove('ok','ng'));
+          hideFb();
+        },3200); return;
+      }
+      ok=true;
+    }
+
+    /* ── CORRECT ── */
+    ST.answered=true;
+    ST.frags.push(lv.frag); collectGem(ST.level-1); updateStateBar();
+    showFb(true,'✅ 答對了！',q.explain);
+    const rv=document.getElementById('frag-rev');
+    document.getElementById('fr-txt').textContent=`🔑 ${lv.frag}`;
+    rv.classList.add('show');
+    document.getElementById('btn-submit').style.display='none';
+    document.getElementById('btn-clear').style.display='none';
+    const bn=document.getElementById('btn-next'); bn.style.display='inline-flex';
+    bn.textContent=ST.level<5?`前往第 ${ST.level+1} 關 →`:'⚔️ 進行最終試煉 →';
+  },
+
+  next(){ if(ST.level<5){ST.level++;renderLevel(ST.level);}else{G.showFinal();} },
+
+  clearOrd(){
+    ST.ordSeq=[];
+    for(let i=0;i<5;i++){
+      const n=document.getElementById(`on-${i}`),c=document.getElementById(`oc-${i}`);
+      if(n)n.textContent='？'; if(c)c.classList.remove('num','ok','ng');
+    }
+  },
+
+  showFinal(){
+    ST.level=6; updateStateBar();
+    const asm=document.getElementById('frag-asm'); asm.innerHTML='';
+    FRAGS.forEach((f,i)=>{
+      const p=document.createElement('div'); p.className='fa-pc';
+      p.style.animationDelay=`${i*.14}s`; p.textContent=f; asm.appendChild(p);
+    });
+    document.getElementById('asm-txt').textContent=FULL_SENT;
+    document.getElementById('final-q').textContent=FINAL_Q.txt;
+    const fa=document.getElementById('final-ans'); fa.innerHTML='';
+    const ol=document.createElement('div'); ol.className='opts'; ol.id='f-opts';
+    FINAL_Q.opts.forEach((o,i)=>{
+      const b=document.createElement('button'); b.className='opt-btn'; b.id=`fo-${i}`;
+      b.innerHTML=`<span class="opt-ltr">${'ABCD'[i]}</span><span>${o}</span>`;
+      b.onclick=()=>{
+        ST.selOpt=i;
+        document.querySelectorAll('#f-opts .opt-btn').forEach((x,j)=>x.classList.toggle('sel',j===i));
+      };
+      ol.appendChild(b);
+    });
+    fa.appendChild(ol);
+    hideFb('final-fb'); ST.selOpt=-1; ST.answered=false;
+    document.getElementById('btn-final-sub').style.display='inline-flex';
+    document.getElementById('btn-to-victory').style.display='none';
+    document.getElementById('state-txt').textContent=`[系統狀態紀錄 | 最終試煉階段 | 已蒐集：5/5]`;
+    showScreen('s-final');
+  },
+
+  submitFinal(){
+    if(ST.answered) return;
+    if(ST.selOpt===-1){toast('請先選擇一個答案！');return;}
+    ST.answered=true;
+    const ok=ST.selOpt===FINAL_Q.correct;
+    document.querySelectorAll('#f-opts .opt-btn').forEach((b,i)=>{
+      b.disabled=true;
+      if(i===ST.selOpt) b.classList.add(ok?'ok':'ng');
+      if(i===FINAL_Q.correct&&!ok) b.classList.add('ok');
+    });
+    if(ok){
+      showFb(true,'✅ 完全正確！密室封印已解除！',FINAL_Q.explain,'final-fb');
+      document.getElementById('btn-final-sub').style.display='none';
+      document.getElementById('btn-to-victory').style.display='inline-flex';
+    } else {
+      showFb(false,'❌ 再想想！',FINAL_Q.hint,'final-fb');
+      setTimeout(()=>{
+        ST.answered=false; ST.selOpt=-1;
+        document.querySelectorAll('#f-opts .opt-btn').forEach(b=>{b.disabled=false;b.classList.remove('ok','ng','sel');});
+        hideFb('final-fb');
+      },2800);
+    }
+  },
+
+  victory(){
+    document.getElementById('state-txt').textContent='[系統狀態紀錄 | 🏆 挑戰完成！密室封印已全數解除！]';
+    document.getElementById('name-input-area').style.display='block';
+    document.getElementById('cert-area').style.display='none';
+    document.getElementById('winner-name').value='';
+    showScreen('s-victory');
+    const clrs=['#c9a227','#e07030','#7b2fff','#f0d060','#52c476','#e84040','#fff','#60e8d0'];
+    for(let i=0;i<90;i++) setTimeout(()=>{
+      const c=document.createElement('div'); c.className='cf';
+      c.style.cssText=`left:${Math.random()*100}vw;top:0;background:${clrs[Math.floor(Math.random()*clrs.length)]};border-radius:${Math.random()>.5?'50%':'2px'};width:${6+Math.random()*7}px;height:${6+Math.random()*10}px;--cd:${2+Math.random()*2}s;--cr:${360+Math.random()*720}deg`;
+      document.body.appendChild(c); setTimeout(()=>c.remove(),4600);
+    },i*38);
+  },
+
+  generateCert(){
+    const name=(document.getElementById('winner-name').value||'').trim();
+    if(!name){toast('請先輸入您的姓名！');return;}
+    document.getElementById('sfx-awards').currentTime = 0;
+    document.getElementById('sfx-awards').play().catch(e=>console.log(e));
+
+    document.getElementById('cert-name-display').textContent=name;
+    const now=new Date();
+    const dateStr=`${now.getFullYear()} 年 ${now.getMonth()+1} 月 ${now.getDate()} 日`;
+    document.getElementById('cert-date').textContent=`認證日期：${dateStr}`;
+    document.getElementById('name-input-area').style.display='none';
+    document.getElementById('cert-area').style.display='block';
+  },
+
+  goHome(){
+    ST.level=1; ST.frags=[]; ST.selOpt=-1; ST.ordSeq=[]; ST.answered=false; ST.curQ=null;
+    initGems(); updateStateBar();
+    showScreen('s-intro');
+  }
+};
+
+// Handle Autoplay Policy
+window.addEventListener('click', function initAudio() {
+  const bgm = document.getElementById('bgm');
+  const btn = document.getElementById('btn-music');
+  if (bgm && bgm.paused) {
+    bgm.play().then(() => {
+      btn.textContent = '🎵 音樂: 播放中';
+    }).catch(e => console.log('Autoplay blocked:', e));
+  }
+  window.removeEventListener('click', initAudio);
+}, { once: true });
+
+</script>
+
+  <footer style="text-align: center; padding: 1rem; padding-bottom: 2rem; color: rgba(255,255,255,0.4); font-size: 0.9rem; position: relative; z-index: 100; margin-top: 2rem;">
+    &copy; 2026 奕鈞老師 版權所有 | Version 2.0
+  </footer>
+</body>
+</html>
