@@ -474,12 +474,33 @@
 </head>
 <body>
 
-<audio id="bgm" src="Music_Trap_Drama.mp3" autoplay loop></audio>
-<audio id="sfx-awards" src="Awards.m4a"></audio>
+
+<script>
+  function forcePlay() {
+    var bgm = document.getElementById('bgm');
+    var btn = document.getElementById('btn-music');
+    if (bgm && bgm.paused) {
+      bgm.play().then(() => {
+        if(btn) btn.textContent = '🎵 音樂: 播放中';
+      }).catch(e => {
+        // browser blocked, wait for user interaction
+      });
+    }
+  }
+  // Attempt to play immediately
+  window.addEventListener('load', forcePlay);
+  // Attempt to play on any user interaction (mousemove, scroll, touchstart, click)
+  ['click', 'touchstart', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
+    window.addEventListener(evt, forcePlay, { once: true });
+  });
+</script>
+
+<audio id="bgm" src="assets/audio/Music_Trap_Drama.mp3" autoplay loop></audio>
+<audio id="sfx-awards" src="assets/audio/Awards.m4a"></audio>
 
 
-<img src="tao.png" class="mascot-q" alt="陶淵明 Q版畫像">
-<img src="tao_ink.png" class="mascot-ink" alt="陶淵明 水墨畫像">
+<img src="assets/img/tao.png" class="mascot-q" alt="陶淵明 Q版畫像">
+<img src="assets/img/tao_ink.png" class="mascot-ink" alt="陶淵明 水墨畫像">
 
 
 <!-- ══ STATE BAR with gems top-right ══ -->
