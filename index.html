@@ -470,6 +470,13 @@
     #gem-bar { flex: 1; justify-content: center; align-items: center; gap: .4rem; }
     .sb-right { flex: 1; display: flex; justify-content: flex-end; }
     #state-txt { font-size: 1.15rem; margin-left: 0.5rem; }
+
+    /* Hide ink mascot on portrait screens to prevent text overlap */
+    @media (orientation: portrait) {
+      .mascot-ink {
+        display: none !important;
+      }
+    }
 </style>
 </head>
 <body>
