@@ -431,18 +431,7 @@
       filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
       pointer-events: none;
     }
-    /* Mascot Ink-style */
-    .mascot-ink {
-      position: fixed;
-      left: 0vw;
-      bottom: 0;
-      height: 80vh;
-      z-index: 100;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
-      pointer-events: none;
-      object-fit: contain;
-      object-position: left bottom;
-    }
+    /* Mascot Ink-style removed */
     @keyframes rock {
       0% { transform: rotate(-5deg); }
       50% { transform: rotate(5deg); }
@@ -471,12 +460,7 @@
     .sb-right { flex: 1; display: flex; justify-content: flex-end; }
     #state-txt { font-size: 1.15rem; margin-left: 0.5rem; }
 
-    /* Hide ink mascot on portrait screens to prevent text overlap */
-    @media (orientation: portrait) {
-      .mascot-ink {
-        display: none !important;
-      }
-    }
+    
 </style>
 </head>
 <body>
@@ -507,7 +491,6 @@
 
 
 <img src="assets/img/tao.png" class="mascot-q" alt="陶淵明 Q版畫像">
-<img src="assets/img/tao_ink.png" class="mascot-ink" alt="陶淵明 水墨畫像">
 
 
 <!-- ══ STATE BAR with gems top-right ══ -->
@@ -528,7 +511,7 @@
   <!-- ★ INTRO ★ -->
   <section id="s-intro" class="screen active">
     <div class="badge">🔐 知識密室逃脫</div>
-    <h1 class="main-title">陶淵明知識密室</h1>
+    <h1 class="main-title" style="display:flex; align-items:center; justify-content:center; gap:12px;">陶淵明知識密室 <img src="assets/img/tao_ink.png" style="height:1.2em; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));" alt="陶淵明"></h1>
     <p class="main-sub">尋訪五柳園田，解鎖隱逸詩人的豁達智慧</p>
     <p class="intro-desc">
       勇者，你已踏入一座封印著真理的虛擬密室。<br>
@@ -553,7 +536,10 @@
       <div class="lv-badge">
         <div class="lv-num" id="lv-num">1</div>
         <div class="lv-info">
-          <h2 id="lv-title">第一關</h2>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 id="lv-title">第一關</h2>
+            <img src="assets/img/tao_ink.png" style="height:1.6rem; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));" alt="陶淵明">
+          </div>
           <p  id="lv-sub">現象推論</p>
         </div>
       </div>
